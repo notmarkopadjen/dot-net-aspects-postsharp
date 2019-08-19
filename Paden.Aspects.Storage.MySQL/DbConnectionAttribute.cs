@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace Paden.Aspects.Storage.MySQL
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     [PSerializable]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class DbConnectionAttribute : MethodInterceptionAspect
     {
         const string DefaultConnectionStringName = "DefaultConnection";

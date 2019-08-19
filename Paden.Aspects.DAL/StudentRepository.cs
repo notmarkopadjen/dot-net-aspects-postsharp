@@ -1,24 +1,37 @@
-﻿using Dapper;
+﻿using Dapper.Contrib.Extensions;
+using Paden.Aspects.Caching.Redis;
 using Paden.Aspects.DAL.Entities;
 using Paden.Aspects.Storage.MySQL;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+using static Paden.Aspects.Caching.Redis.CacheExtensions;
 
 namespace Paden.Aspects.DAL
 {
     public class StudentRepository
     {
+        [Cache]
         [DbConnection]
-        public IEnumerable<Student> ReadAll(IDbConnection connection = null)
+        public Task<IEnumerable<Student>> GetAllAsync(IDbConnection connection = null)
         {
-            return connection.Query<Student>($"select * from `{nameof(Student)}`");
+            return connection.GetAllAsync<Student>();
         }
 
         [DbConnection]
-        public Task<IEnumerable<Student>> ReadAllAsync(IDbConnection connection = null)
+        public async Task<int> InsertAsync(Student student, IDbConnection connection = null)
         {
-            return connection.QueryAsync<Student>($"select * from `{nameof(Student)}`");
+            var result = await connection.InsertAsync(student);
+            this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
+            return result;
+        }
+
+        [DbConnection]
+        public async Task<bool> UpdateAsync(Student student, IDbConnection connection = null)
+        {
+            var result = await connection.UpdateAsync(student);
+            this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
+            return result;
         }
     }
 }

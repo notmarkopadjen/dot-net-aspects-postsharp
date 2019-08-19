@@ -13,7 +13,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
     <PackageReference Include="MySqlConnector" Version="0.56.0" />
-    <PackageReference Include="PostSharp" Version="6.2.10" />
   </ItemGroup>
 
   <ItemGroup>
