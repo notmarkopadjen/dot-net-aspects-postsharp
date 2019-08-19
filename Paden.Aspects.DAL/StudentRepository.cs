@@ -1,6 +1,6 @@
 ﻿using Dapper;
-using MySql.Data.MySqlClient;
 using Paden.Aspects.DAL.Entities;
+using Paden.Aspects.Storage.MySQL;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -9,13 +9,10 @@ namespace Paden.Aspects.DAL
 {
     public class StudentRepository
     {
-        public List<Student> ReadAll()
+        [DbConnection]
+        public List<Student> ReadAll(IDbConnection connection = null)
         {
-            using (IDbConnection db = new MySqlConnection("Server=localhost;User ID=root;Password=password;Database=university"))
-            {
-                return db.Query<Student>($"select * from `{nameof(Student)}`").ToList();
-            }
+            return connection.Query<Student>($"select * from `{nameof(Student)}`").ToList();
         }
-
     }
 }

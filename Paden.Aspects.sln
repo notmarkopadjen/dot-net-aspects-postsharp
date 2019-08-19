@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{0D559C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paden.Aspects.DAL", "Paden.Aspects.DAL\Paden.Aspects.DAL.csproj", "{A593B70F-F27A-4A00-9D60-F50BCD744165}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paden.Aspects.Storage.MySQL", "Paden.Aspects.Storage.MySQL\Paden.Aspects.Storage.MySQL.csproj", "{BE926081-C46E-4E98-86C5-EBAB670974A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspects", "Aspects", "{5FB26440-E20D-40E1-B8E9-1368EEDF03DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,9 +36,17 @@ Global
 		{A593B70F-F27A-4A00-9D60-F50BCD744165}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A593B70F-F27A-4A00-9D60-F50BCD744165}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A593B70F-F27A-4A00-9D60-F50BCD744165}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE926081-C46E-4E98-86C5-EBAB670974A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE926081-C46E-4E98-86C5-EBAB670974A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE926081-C46E-4E98-86C5-EBAB670974A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE926081-C46E-4E98-86C5-EBAB670974A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{74AAA733-10A9-4806-9992-FA6CD01CEED4} = {5FB26440-E20D-40E1-B8E9-1368EEDF03DE}
+		{BE926081-C46E-4E98-86C5-EBAB670974A7} = {5FB26440-E20D-40E1-B8E9-1368EEDF03DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E6D0226-6902-4AEF-999A-3D79E70203EA}
