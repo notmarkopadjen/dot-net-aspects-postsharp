@@ -13,6 +13,8 @@ namespace Paden.Aspects.Storage.MySQL
     [PSerializable]
     public class DbConnectionAttribute : MethodInterceptionAspect
     {
+        const string DefaultConnectionStringName = "DefaultConnection";
+
         static Lazy<IConfigurationRoot> config;
 
         static DbConnectionAttribute()
@@ -22,24 +24,32 @@ namespace Paden.Aspects.Storage.MySQL
 
         public override void OnInvoke(MethodInterceptionArgs args)
         {
-            var connectionArgument = args.Arguments.Last();
-            if (connectionArgument != null)
+            if (args.Arguments.Last() != null)
             {
-                base.OnInvoke(args);
+                args.Proceed();
                 return;
             }
 
-            using (IDbConnection db = new MySqlConnection(config.Value.GetConnectionString("DefaultConnection")))
+            using (IDbConnection db = new MySqlConnection(config.Value.GetConnectionString(DefaultConnectionStringName)))
             {
-                args.Arguments.SetArgument(args.Arguments.Count - 1, db);   
-                base.OnInvoke(args);
-                return;
+                args.Arguments.SetArgument(args.Arguments.Count - 1, db);
+                args.Proceed();
             }
         }
 
-        public override Task OnInvokeAsync(MethodInterceptionArgs args)
+        public override async Task OnInvokeAsync(MethodInterceptionArgs args)
         {
-            return base.OnInvokeAsync(args);
+            if (args.Arguments.Last() != null)
+            {
+                await args.ProceedAsync();
+                return;
+            }
+
+            using (IDbConnection db = new MySqlConnection(config.Value.GetConnectionString(DefaultConnectionStringName)))
+            {
+                args.Arguments.SetArgument(args.Arguments.Count - 1, db);
+                await args.ProceedAsync();
+            }
         }
     }
 }

@@ -19,6 +19,8 @@ namespace Paden.Aspects.POC
             }
             Console.WriteLine(new string('-', 10));
             Console.WriteLine(new StudentRepository().ReadAll().First().Name);
+            Console.WriteLine(new string('-', 10));
+            Console.WriteLine(new StudentRepository().ReadAllAsync().Result.First().Name);
         }
     }
 }
