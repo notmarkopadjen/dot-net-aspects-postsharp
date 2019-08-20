@@ -3,16 +3,28 @@ using Paden.Aspects.DAL.Entities;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using Moq;
+using System.Data;
+using Paden.Aspects.Caching.Redis;
+using static Paden.Aspects.Caching.Redis.CacheExtensions;
 
 namespace Paden.Aspects.DAL.Tests
 {
-    public class StudentRepositoryTests : IClassFixture<DatabaseFixture>
+    public class StudentRepositoryTests : IClassFixture<DatabaseFixture>, IDisposable
     {
+        DatabaseFixture fixture;
         StudentRepository systemUnderTest;
 
-        public StudentRepositoryTests()
+        public StudentRepositoryTests(DatabaseFixture fixture)
         {
+            this.fixture = fixture;
+            fixture.RecreateTables();
             systemUnderTest = new StudentRepository();
+        }
+
+        public void Dispose()
+        {
+            systemUnderTest.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
         }
 
         [Fact]
@@ -41,6 +53,50 @@ namespace Paden.Aspects.DAL.Tests
             });
 
             Assert.False((await systemUnderTest.GetAllAsync()).Any());
+        }
+
+        [Fact]
+        public async Task GetAllAsync_Should_Not_Call_Database_On_Second_Call()
+        {
+            var student = new Student
+            {
+                Name = "Not Marko Padjen"
+            };
+            await systemUnderTest.InsertAsync(student);
+
+            Assert.Equal(student.Name, (await systemUnderTest.GetAllAsync()).First().Name);
+
+            var connectionMock = Mock.Of<IDbConnection>();
+
+            Assert.Equal(student.Name, (await systemUnderTest.GetAllAsync(connectionMock)).First().Name);
+
+            Mock.Get(connectionMock).Verify(m => m.Open(), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_Should_Be_Called_Again_If_Entity_Updated()
+        {
+            var student = new Student
+            {
+                Id = 1,
+                Name = "Not Marko Padjen"
+            };
+            var studentUpdated = new Student
+            {
+                Id = 1,
+                Name = "Not Marko Padjen UPDATED"
+            };
+            await systemUnderTest.InsertAsync(student);
+
+            Assert.Equal(student.Name, (await systemUnderTest.GetAllAsync()).First().Name);
+
+            await systemUnderTest.UpdateAsync(studentUpdated);
+
+            var connectionMock = fixture.GetConnectionFacade();
+
+            Assert.Equal(studentUpdated.Name, (await systemUnderTest.GetAllAsync(connectionMock)).First().Name);
+
+            Mock.Get(connectionMock).Verify(m => m.CreateCommand(), Times.Once);
         }
     }
 }

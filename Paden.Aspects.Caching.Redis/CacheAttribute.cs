@@ -6,6 +6,7 @@ using PostSharp.Serialization;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -158,7 +159,14 @@ namespace Paden.Aspects.Caching.Redis
         {
             keyBuilder.Append(parameter.ParameterType.FullName);
             keyBuilder.Append(" ");
-            keyBuilder.Append(value == null ? "<NULL>" : value.ToString());
+            if (parameter.ParameterType == typeof(IDbConnection))
+            {
+                keyBuilder.Append("<IGNORED>");
+            }
+            else
+            {
+                keyBuilder.Append(value == null ? "<NULL>" : value.ToString());
+            }
             keyBuilder.Append(", ");
         }
     }

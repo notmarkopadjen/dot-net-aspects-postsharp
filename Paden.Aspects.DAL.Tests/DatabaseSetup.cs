@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Moq;
 using MySql.Data.MySqlClient;
 using Paden.Aspects.DAL.Entities;
 using Paden.Aspects.Storage.MySQL;
 using System;
+using System.Data;
 
 namespace Paden.Aspects.DAL.Tests
 {
@@ -21,9 +23,20 @@ namespace Paden.Aspects.DAL.Tests
             new MySqlCommand($"CREATE DATABASE `{DatabaseName}`;", Connection).ExecuteNonQuery();
             Connection.ChangeDatabase(DatabaseName);
 
-            new MySqlCommand(Student.ReCreateStatement, Connection).ExecuteNonQuery();
-
             DbConnectionAttribute.ConnectionString = $"{connectionString};Database={DatabaseName}";
+        }
+
+        public void RecreateTables()
+        {
+            new MySqlCommand(Student.ReCreateStatement, Connection).ExecuteNonQuery();
+        }
+
+        public IDbConnection GetConnectionFacade()
+        {
+            var connectionMock = Mock.Of<IDbConnection>();
+            Mock.Get(connectionMock).Setup(m => m.CreateCommand()).Returns(Connection.CreateCommand()).Verifiable();
+            Mock.Get(connectionMock).SetupGet(m => m.State).Returns(ConnectionState.Open).Verifiable();
+            return connectionMock;
         }
 
         public void Dispose()
