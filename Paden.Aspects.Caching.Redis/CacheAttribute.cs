@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using PostSharp.Aspects;
+using PostSharp.Aspects.Dependencies;
 using PostSharp.Serialization;
 using StackExchange.Redis;
 using System;
@@ -14,6 +15,8 @@ using System.Threading.Tasks;
 namespace Paden.Aspects.Caching.Redis
 {
     [PSerializable]
+    [ProvideAspectRole(StandardRoles.Caching)]
+    [AspectRoleDependency(AspectDependencyAction.Order, AspectDependencyPosition.Before, StandardRoles.TransactionHandling)]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class CacheAttribute : MethodInterceptionAspect
     {

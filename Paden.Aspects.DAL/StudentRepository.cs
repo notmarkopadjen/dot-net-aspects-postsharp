@@ -11,6 +11,17 @@ namespace Paden.Aspects.DAL
 {
     public class StudentRepository
     {
+        [DbConnection]
+        public void ReCreateTable(IDbConnection connection = null)
+        {
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = Student.ReCreateStatement;
+            cmd.ExecuteNonQuery();
+            connection.Close();
+        }
+
         [Cache]
         [DbConnection]
         public Task<IEnumerable<Student>> GetAllAsync(IDbConnection connection = null)
