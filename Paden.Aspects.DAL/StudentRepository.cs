@@ -44,5 +44,13 @@ namespace Paden.Aspects.DAL
             this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
             return result;
         }
+
+        [DbConnection]
+        public async Task<bool> DeleteAsync(Student student, IDbConnection connection = null)
+        {
+            var result = await connection.DeleteAsync(student);
+            this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
+            return result;
+        }
     }
 }

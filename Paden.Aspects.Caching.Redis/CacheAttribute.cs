@@ -28,6 +28,8 @@ namespace Paden.Aspects.Caching.Redis
         public int ExpirySeconds = DefaultExpirySeconds;
         private TimeSpan? Expiry => ExpirySeconds == -1 ? (TimeSpan?)null : TimeSpan.FromSeconds(ExpirySeconds);
 
+        public static bool IsEnabled { get; set; }
+
         static CacheAttribute()
         {
             config = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder().AddJsonFile("appsettings.json", false, false).Build());
@@ -36,6 +38,12 @@ namespace Paden.Aspects.Caching.Redis
 
         public override void OnInvoke(MethodInterceptionArgs args)
         {
+            if (!IsEnabled)
+            {
+                args.Proceed();
+                return;
+            }
+
             var key = GetKey(args.Method as MethodInfo, args.Arguments);
             var redisValue = db.Value.StringGet(key);
 
@@ -52,6 +60,12 @@ namespace Paden.Aspects.Caching.Redis
 
         public override async Task OnInvokeAsync(MethodInterceptionArgs args)
         {
+            if (!IsEnabled)
+            {
+                await args.ProceedAsync();
+                return;
+            }
+
             var key = GetKey(args.Method as MethodInfo, args.Arguments);
             var redisValue = await db.Value.StringGetAsync(key);
 
