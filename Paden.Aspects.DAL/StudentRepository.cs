@@ -9,8 +9,13 @@ using static Paden.Aspects.Caching.Redis.CacheExtensions;
 
 namespace Paden.Aspects.DAL
 {
-    public class StudentRepository
+    public class StudentRepository : ICacheAware
     {
+        /// <summary>
+        /// Use cache switch. Not required, convenient for testing
+        /// </summary>
+        public bool CacheEnabled { get; set; } = true;
+
         [DbConnection]
         public void ReCreateTable(IDbConnection connection = null)
         {

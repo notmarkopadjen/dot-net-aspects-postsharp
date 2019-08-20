@@ -3,11 +3,10 @@ using Paden.Aspects.DAL.Entities;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using Paden.Aspects.Caching.Redis;
 
 namespace Paden.Aspects.DAL.Tests
 {
-    public class StudentRepositoryTests : IClassFixture<DatabaseFixture>, IDisposable
+    public class StudentRepositoryTests : IClassFixture<DatabaseFixture>
     {
         StudentRepository systemUnderTest;
 
@@ -16,15 +15,10 @@ namespace Paden.Aspects.DAL.Tests
             systemUnderTest = new StudentRepository();
         }
 
-        public void Dispose()
-        {
-            CacheAttribute.IsEnabled = true;
-        }
-
         [Fact]
-        public async Task Shuold_Create_Entity_Update_Delete_And_Return_Proper_Results_Using_Database()
+        public async Task Should_Create_Update_Delete_Entity_And_Return_Proper_Results_Using_Database()
         {
-            CacheAttribute.IsEnabled = false;
+            systemUnderTest.CacheEnabled = false;
 
             await systemUnderTest.InsertAsync(new Student
             {
