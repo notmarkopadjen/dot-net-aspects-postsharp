@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paden.Aspects.Caching.Redis
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{0D559C82-5921-4C74-9FE2-7BD255E44B43}"
 	ProjectSection(SolutionItems) = preProject
-		Docker\docker-compose.yml = Docker\docker-compose.yml
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paden.Aspects.DAL", "Paden.Aspects.DAL\Paden.Aspects.DAL.csproj", "{A593B70F-F27A-4A00-9D60-F50BCD744165}"
@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paden.Aspects.Storage.MySQL
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspects", "Aspects", "{5FB26440-E20D-40E1-B8E9-1368EEDF03DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paden.Aspects.DAL.Tests", "Paden.Aspects.DAL.Tests\Paden.Aspects.DAL.Tests.csproj", "{4FED2BD5-8384-4250-B414-0DE1F13E4370}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paden.Aspects.DAL.Tests", "Paden.Aspects.DAL.Tests\Paden.Aspects.DAL.Tests.csproj", "{4FED2BD5-8384-4250-B414-0DE1F13E4370}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

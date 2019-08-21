@@ -7,18 +7,25 @@ using Moq;
 using System.Data;
 using Paden.Aspects.Caching.Redis;
 using static Paden.Aspects.Caching.Redis.CacheExtensions;
+using System.Diagnostics;
+using Xunit.Abstractions;
 
 namespace Paden.Aspects.DAL.Tests
 {
     public class StudentRepositoryTests : IClassFixture<DatabaseFixture>, IDisposable
     {
         DatabaseFixture fixture;
+        readonly ITestOutputHelper output;
+
         StudentRepository systemUnderTest;
 
-        public StudentRepositoryTests(DatabaseFixture fixture)
+        public StudentRepositoryTests(DatabaseFixture fixture, ITestOutputHelper output)
         {
             this.fixture = fixture;
+            this.output = output;
+
             fixture.RecreateTables();
+
             systemUnderTest = new StudentRepository();
         }
 
@@ -64,13 +71,25 @@ namespace Paden.Aspects.DAL.Tests
             };
             await systemUnderTest.InsertAsync(student);
 
+            var swDatabase = new Stopwatch();
+            swDatabase.Start();
             Assert.Equal(student.Name, (await systemUnderTest.GetAllAsync()).First().Name);
+            swDatabase.Stop();
+
+            output.WriteLine($"Database run time (ms): {swDatabase.ElapsedMilliseconds}");
 
             var connectionMock = Mock.Of<IDbConnection>();
 
+            var swCache = new Stopwatch();
+            swCache.Start();
             Assert.Equal(student.Name, (await systemUnderTest.GetAllAsync(connectionMock)).First().Name);
+            swCache.Stop();
 
             Mock.Get(connectionMock).Verify(m => m.Open(), Times.Never);
+
+            output.WriteLine($"Cache run time (ms): {swCache.ElapsedMilliseconds}");
+
+            Assert.True(swCache.ElapsedMilliseconds < swDatabase.ElapsedMilliseconds);
         }
 
         [Fact]

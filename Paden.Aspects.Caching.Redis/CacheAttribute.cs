@@ -23,17 +23,15 @@ namespace Paden.Aspects.Caching.Redis
     {
         const int DefaultExpirySeconds = 5 * 60;
 
-        static Lazy<IConfigurationRoot> config;
-        static Lazy<IDatabase> db;
+        static Lazy<string> redisServer;
 
         public int ExpirySeconds = DefaultExpirySeconds;
         private TimeSpan? Expiry => ExpirySeconds == -1 ? (TimeSpan?)null : TimeSpan.FromSeconds(ExpirySeconds);
 
         static CacheAttribute()
         {
-            config = new Lazy<IConfigurationRoot>(() => new ConfigurationBuilder().AddJsonFile("appsettings.json", false, false).Build());
-            db = new Lazy<IDatabase>(() => ConnectionMultiplexer.Connect(config.Value["Redis:Server"]).GetDatabase());
-        }
+            redisServer = new Lazy<string>(() => new ConfigurationBuilder().AddJsonFile("appsettings.json", false, false).Build()["Redis:Server"]);
+        }        
 
         public override void OnInvoke(MethodInterceptionArgs args)
         {
@@ -44,16 +42,21 @@ namespace Paden.Aspects.Caching.Redis
             }
 
             var key = GetKey(args.Method as MethodInfo, args.Arguments);
-            var redisValue = db.Value.StringGet(key);
 
-            if (redisValue.IsNullOrEmpty)
+            using (var connection = ConnectionMultiplexer.Connect(redisServer.Value))
             {
-                args.Proceed();
-                db.Value.StringSet(key, JsonConvert.SerializeObject(args.ReturnValue), Expiry);
-            }
-            else
-            {
-                args.ReturnValue = JsonConvert.DeserializeObject(redisValue.ToString(), (args.Method as MethodInfo).ReturnType);
+                var db = connection.GetDatabase();
+                var redisValue = db.StringGet(key);
+
+                if (redisValue.IsNullOrEmpty)
+                {
+                    args.Proceed();
+                    db.StringSet(key, JsonConvert.SerializeObject(args.ReturnValue), Expiry);
+                }
+                else
+                {
+                    args.ReturnValue = JsonConvert.DeserializeObject(redisValue.ToString(), (args.Method as MethodInfo).ReturnType);
+                }
             }
         }
 
@@ -66,16 +69,21 @@ namespace Paden.Aspects.Caching.Redis
             }
 
             var key = GetKey(args.Method as MethodInfo, args.Arguments);
-            var redisValue = await db.Value.StringGetAsync(key);
 
-            if (redisValue.IsNullOrEmpty)
+            using (var connection = ConnectionMultiplexer.Connect(redisServer.Value))
             {
-                await args.ProceedAsync();
-                db.Value.StringSet(key, JsonConvert.SerializeObject(args.ReturnValue), Expiry);
-            }
-            else
-            {
-                args.ReturnValue = JsonConvert.DeserializeObject(redisValue.ToString(), (args.Method as MethodInfo).ReturnType.GenericTypeArguments[0]);
+                var db = connection.GetDatabase();
+                var redisValue = await db.StringGetAsync(key);
+
+                if (redisValue.IsNullOrEmpty)
+                {
+                    await args.ProceedAsync();
+                    db.StringSet(key, JsonConvert.SerializeObject(args.ReturnValue), Expiry);
+                }
+                else
+                {
+                    args.ReturnValue = JsonConvert.DeserializeObject(redisValue.ToString(), (args.Method as MethodInfo).ReturnType.GenericTypeArguments[0]);
+                }
             }
         }
 
@@ -135,11 +143,14 @@ namespace Paden.Aspects.Caching.Redis
             }
             keyBuilder.Append(")");
 
-            db.Value.ScriptEvaluate(@"
+            using (var connection = ConnectionMultiplexer.Connect(redisServer.Value))
+            {
+                connection.GetDatabase().ScriptEvaluate(@"
                 local keys = redis.call('keys', ARGV[1]) 
                 for i=1, #keys, 5000 do 
                 redis.call('del', unpack(keys, i, math.min(i + 4999, #keys)))
                 end", values: new RedisValue[] { CacheExtensions.EscapeRedisString(keyBuilder.ToString()) });
+            }
         }
 
         private static StringBuilder GetKeyBuilder(MethodInfo method)
