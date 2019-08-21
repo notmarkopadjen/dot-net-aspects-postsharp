@@ -121,15 +121,17 @@ namespace Paden.Aspects.Caching.Redis
 
                 object value = null;
 
-                if (argument is ConstantExpression)
+                if (argument is ConstantExpression constantArgument)
                 {
-                    var constantArgument = argument as ConstantExpression;
                     value = constantArgument.Value;
                 }
-                else if (argument is MethodCallExpression)
+               else if (argument is MemberExpression memberArgument)
                 {
-                    var methodArgument = argument as MethodCallExpression;
-                    if (methodArgument.Method == anyMethod.MakeGenericMethod(methodArgument.Method.GetGenericArguments()))
+                    value = Expression.Lambda(memberArgument).Compile().DynamicInvoke();
+                }
+                else if (argument is MethodCallExpression methodCallArgument)
+                {
+                    if (methodCallArgument.Method == anyMethod.MakeGenericMethod(methodCallArgument.Method.GetGenericArguments()))
                     {
                         value = "*";
                     }

@@ -34,6 +34,13 @@ namespace Paden.Aspects.DAL
             return connection.GetAllAsync<Student>();
         }
 
+        [Cache]
+        [DbConnection]
+        public Task<Student> GetAsync(int id, IDbConnection connection = null)
+        {
+            return connection.GetAsync<Student>(id);
+        }
+
         [DbConnection]
         public async Task<int> InsertAsync(Student student, IDbConnection connection = null)
         {
@@ -47,6 +54,7 @@ namespace Paden.Aspects.DAL
         {
             var result = await connection.UpdateAsync(student);
             this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
+            this.InvalidateCache(r => r.GetAsync(student.Id, Any<IDbConnection>()));
             return result;
         }
 
@@ -55,6 +63,7 @@ namespace Paden.Aspects.DAL
         {
             var result = await connection.DeleteAsync(student);
             this.InvalidateCache(r => r.GetAllAsync(Any<IDbConnection>()));
+            this.InvalidateCache(r => r.GetAsync(student.Id, Any<IDbConnection>()));
             return result;
         }
     }
